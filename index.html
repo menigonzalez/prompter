@@ -243,17 +243,16 @@
 	    }
 
 	    function voltear(){
-			if(document.getElementById("voltear_h").checked){
-			    document.getElementById("voltear_h").checked = false;
+			if(document.getElementById("voltear").checked){
+			    document.getElementById("voltear").checked = false;
 			    h = 1;
 			}else{
-    			    document.getElementById("voltear_h").checked = true;
+				    document.getElementById("voltear").checked = true;
 			    h = -1;
 			}
+
 		    document.getElementById("pantalla").style.webkitTransform = "scale("+h+",1)";
 		    document.getElementById("pantalla").style.MozTransform = "scale("+h+",1)";
-		    document.getElementById("pantalla").style.msTransform = "scale("+h+",1)";
-		    document.getElementById("pantalla").style.OTransform = "scale("+h+",1)";
 		    document.getElementById("pantalla").style.transform = "scale("+h+",1)";
 	    }
 
@@ -336,7 +335,7 @@
 		    <br />
 	        <button id="cargar" onClick="cargar()">Cargar</button>
 		    <br />
-		    <button class="volteadores" onClick="voltear()">Voltear horizontalmente &nbsp;<input type="checkbox" id="voltear_h" tabindex="-1" /></button>
+		    <button class="volteadores" onClick="voltear()">Espejo &nbsp;<input type="checkbox" id="voltear" tabindex="-1" /></button>
 		</div>
 		
 	    <div id="pantalla">
