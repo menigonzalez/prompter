@@ -1,9 +1,12 @@
 <html>
     <head>
         <script>
-	    var font_size = 60;
-	    var velocidad = 50;
+	    var font_size = 80;
+	    var velocidad = 33;
 	    var salto = 1;
+	    var saltobuffer;
+	    var saltobufferactivo = false;
+	    var flechaarribaactivated = false;
 	    var largo;
 	    var pixeles = 0;
 	    var paso;
@@ -17,13 +20,15 @@
 			if (entrada == "" || entrada == " " || entrada == "  "){
 			     entrada = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 			}
-			entrada = entrada.replace(/\r?\n/g, '<br />');
+			entrada = entrada.replace(/\r?\n/g, '<br /><br />');
 			texto.innerHTML = entrada;
 			document.getElementById("controles").style.display = "none";
 			document.getElementById("pantalla").style.display = "block";
+
+			apuntador();
 	    }
 
-	    function teclado(e){
+	    function tecladodentro(e){
 	    
 			if(document.getElementById("pantalla").style.display=="block"){
 				e.preventDefault();
@@ -40,19 +45,45 @@
 				    play();
 				break;
 
+				case 33: /*RE PAG*/
+					if(andando == true){
+				    	subir();
+				    }
+				break;
+
+				case 34: /*AV PAG*/
+					if(saltobufferactivo == false && direccion == true){
+						saltobuffer = salto;
+						salto = saltobuffer + 4;
+						saltobufferactivo = true;
+					}
+				break;
+				
 				case 35: /*FIN*/
 				    piso_tira();
 				    pixeles = fin;
 				    document.getElementById("texto").style.marginTop = "-"+fin+"px";
+
+				    escribir_datos();
 				break;
 
 				case 36: /*INICIO*/
 					pixeles = 0;
 				    document.getElementById("texto").style.marginTop = "0px";
+
+				    escribir_datos();
 				break;
 
-				case 38: /*UP*/
+				case 38: /*FLECHA ARRIBA*/
 				    subir();
+				    flechaarribaactivated = true;
+				break;
+
+				case 40: /*FLECHA ABAJO*/
+					if(andando == true && direccion == false){
+				    	direccion = true;
+				    	flechaarribaactivated = false;
+				    }
 				break;
 
 				case 49: /*1*/
@@ -91,16 +122,6 @@
 				    salto = 9;
 				break;
 
-				case 87: /*W*/
-				    font_size = font_size+5;
-				    document.getElementById("texto").style.fontSize = font_size+"pt";
-				break;
-
-				case 83: /*S*/
-				    font_size = font_size-10;
-				    document.getElementById("texto").style.fontSize = font_size+"pt";
-				break;
-
 				case 97: /*1*/
 				    salto = 1;
 				break;
@@ -136,8 +157,37 @@
 				case 105: /*9*/
 				    salto = 9;
 				break;
+
+				case 107: /*-*/
+				    font_size = font_size + 10;
+				    apuntador();
+				    escribir_datos();
+				break;
+
+				case 109: /*+*/
+				    font_size = font_size - 10;
+				    apuntador();
+				    escribir_datos();
+				break;
 			    }
 			}
+	    }
+
+	    function tecladofuera(e){
+	    	e.preventDefault();
+			var tecla = e.keyCode;
+	    	
+	    	switch(tecla){
+	    		case 33:/*RE PAG*/
+	    			if(flechaarribaactivated == false){
+	    				direccion = true;
+	    			}
+	    		break;
+	    		case 34:/*AV PAG*/
+					salto = saltobuffer;
+					saltobufferactivo = false;
+	    		break;
+	    	}
 	    }
 
 	    function subir(){
@@ -151,126 +201,147 @@
 	    function play(){
 			if (andando == true){
 			    andando = false;
+			    flechaarribaactivated = false;
 			}else{
-			    andando = true;	    
+			    andando = true;    
 			    corre();
 			}
 	    }
 
 	    function corre(){
-		piso_tira();
-	        
-		if(((pixeles<fin && direccion == true)||(pixeles>0 && direccion == false)) && andando == true){
-		    setTimeout(vuelta, velocidad);
-		}else{
-		    andando = false;
-		    direccion = true;
-		}
+			piso_tira();
+		        
+			if(((pixeles<fin && direccion == true)||(pixeles>0 && direccion == false)) && andando == true){
+			    setTimeout(vuelta, velocidad);
+			}else{
+			    andando = false;
+			    direccion = true;
+			}
 	    }
 
 	    function vuelta(){
-	    	console.log(pixeles+" / "+largo_tira+" / Direc:"+direccion+" / Anda:"+andando);
+	    	escribir_datos();
+	    	//console.log("DIRECCIÓN: "+direccion+" / ANDA: "+andando);
 
-		paso = salto*2;
-		if(direccion == true){
-	            pixeles = pixeles+paso;
-		}else{
-		    pixeles = pixeles-paso;
-		}
-		imprime_pixeles = pixeles*-1;
-		document.getElementById("texto").style.marginTop = imprime_pixeles+"px";
-		corre();
+			paso = salto*1.3;
+			if(direccion == true){
+		        pixeles = pixeles+paso;
+			}else{
+			    pixeles = pixeles-paso;
+			}
+			imprime_pixeles = pixeles*-1;
+			document.getElementById("texto").style.marginTop = imprime_pixeles+"px";
+			corre();
 	    }
 
 	    function piso_tira(){
-		largo_tira = document.getElementById("texto").offsetHeight;
-		alto_pantalla = document.body.clientHeight;
-		fin_tira = (alto_pantalla)/2;
-		fin = largo_tira-fin_tira;
-		console.log("FIN: "+fin);
+			largo_tira = document.getElementById("texto").offsetHeight;
+			alto_pantalla = document.body.clientHeight;
+			fin_tira = font_size;
+			fin = largo_tira-fin_tira;
+			//console.log("DETENER TIRA: "+fin + "px");
 	    }
 
-	    function voltear(eje){
-		switch (eje){
-		    case 'h':
-			if(document.getElementById("voltear_h").checked){
-			    document.getElementById("voltear_h").checked = false;
+	    function voltear(){
+			if(document.getElementById("voltear").checked){
+			    document.getElementById("voltear").checked = false;
 			    h = 1;
 			}else{
-    			    document.getElementById("voltear_h").checked = true;
+				    document.getElementById("voltear").checked = true;
 			    h = -1;
 			}
-		    break;
-		    case 'v':
-			if(document.getElementById("voltear_v").checked){
-			    document.getElementById("voltear_v").checked = false;
-			    v = 1;
-			}else{
-    			    document.getElementById("voltear_v").checked = true;
-			    v = -1;
-			}
-		    break;
-		}
-		    document.getElementById("texto").style.webkitTransform = "scale("+h+","+v+")";
-		    document.getElementById("texto").style.MozTransform = "scale("+h+","+v+")";
-		    document.getElementById("texto").style.msTransform = "scale("+h+","+v+")";
-		    document.getElementById("texto").style.OTransform = "scale("+h+","+v+")";
-		    document.getElementById("texto").style.transform = "scale("+h+","+v+")";
 
+		    document.getElementById("pantalla").style.webkitTransform = "scale("+h+",1)";
+		    document.getElementById("pantalla").style.MozTransform = "scale("+h+",1)";
+		    document.getElementById("pantalla").style.transform = "scale("+h+",1)";
+	    }
+
+	    function apuntador(){
+	    	document.getElementById("apuntador").style.borderLeft = font_size + "px solid #FFF";
+			document.getElementById("apuntador").style.borderTop = font_size/2 + "px solid transparent";
+			document.getElementById("apuntador").style.borderBottom = font_size/2 + "px solid transparent";
+			document.getElementById("pantalla").style.top = (window.innerHeight / 2)-(font_size/2) + "px";
+
+			var margenApuntador = font_size*0.75;
+			document.getElementById("texto").style.width = window.innerWidth - margenApuntador + "px";
+			document.getElementById("texto").style.marginLeft = margenApuntador + "px";
+			document.getElementById("texto").style.fontSize = font_size + "px";
+			
+	    }
+
+	    window.addEventListener("resize", apuntador);
+
+	    function escribir_datos(){
+	    	console.log("PX OFFSET: "+ pixeles + " LARGO TIRA: " + largo_tira + " FONT: " + font_size);
 	    }
         </script>
 
 	<style>
+
 	    body{
 		background-color:#000;
 		font-family:"Arial";
 		color:#FFF;
 		overflow:hidden;
+		width: 100%;
+		margin:0;
 	    }
 
 	    #entrada{
-                width:100%;
-		height:76%;
+            width:100%;
+			height:84%;;
 	    }
 
 	    #cargar{
-		width:100%;
-		height:8%;
+			width:100%;
+			height:8%;
 	    }
 
 	    #controles{
-		margin: 0 auto;
-		width:80%;
+			margin: 0 auto;
+			width:80%;
 	    }
 
 	    #pantalla{
-		display:none;
-	    }
-	
-	    #texto{
-		font-size:60pt;
-		/*word-break: break-all;*/
-		word-wrap: break-word;
+	    	position: absolute;
+			display:none;
 	    }
 
-	    .volteos{
-		width: 100%;
-		height:8%;
+	    #apuntador{
+			width: 0;
+			height: 0;
+			position: absolute;
+		}
+
+	    #texto{
+			/*word-break: break-all;*/
+			word-wrap: break-word;
+			-webkit-user-select: none;
+		  	
+		  	-moz-user-select: none;
+			-ms-user-select: none;
+			user-select: none;
+			cursor:default;
+	    }
+
+	    .volteadores{
+			width: 100%;
+			height:8%;
 	    }
         </style>
     </head>
-    <body onkeydown="teclado(event)">
-	<div id="controles">
-            <textarea id="entrada"></textarea>
-	    <br />
-            <button id="cargar" onClick="cargar()">Cargar</button>
-	    <br />
-	    <button class="volteos" onClick="voltear('h')">Voltear horizontalmente &nbsp;<input type="checkbox" id="voltear_h" /></button>
-	    <br />
-	    <button class="volteos" disabled="disabled" onClick="voltear('v')">Voltear verticalmente &nbsp;<input type="checkbox" id="voltear_v" /></button>
-        </div>
-        <div id="pantalla">
-	    <p id="texto"></p>
+    <body onkeydown="tecladodentro(event)" onkeyup="tecladofuera(event)">
+		<div id="controles">
+	        <textarea id="entrada"></textarea>
+		    <br />
+	        <button id="cargar" onClick="cargar()">Cargar</button>
+		    <br />
+		    <button class="volteadores" onClick="voltear()">Espejo &nbsp;<input type="checkbox" id="voltear" tabindex="-1" /></button>
+		</div>
+		
+	    <div id="pantalla">
+	    	<div id="apuntador"></div>
+		    <article id="texto"></article>
         </div>
     </body>
 </html>
